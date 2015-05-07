@@ -42,6 +42,14 @@ var types = {
   },
 
   number: function (s) {
+    if (s.hasOwnProperty('enum')) {
+      // workaround for numeric keys. tcomb issue filed. May be rewritten as `list` of `number`s
+      var e = enums.of(s['enum']);
+      e.is = function (x) {
+        return  this.meta.map.hasOwnProperty(x);
+      }
+      return e;
+    }
     var predicate;
     if (s.hasOwnProperty('minimum')) {
       predicate = s.exclusiveMinimum ?
@@ -60,6 +68,14 @@ var types = {
   },
 
   integer: function (s) {
+    if (s.hasOwnProperty('enum')) {
+      // workaround for numeric keys. tcomb issue filed. May be rewritten as `list` of `number`s
+      var e = enums.of(s['enum']);
+      e.is = function (x) {
+        return  this.meta.map.hasOwnProperty(x);
+      }
+      return e;
+    }
     var predicate;
     if (s.hasOwnProperty('minimum')) {
       predicate = s.exclusiveMinimum ?

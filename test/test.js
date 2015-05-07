@@ -85,6 +85,16 @@ describe('transform', function () {
       eq(transform({type: 'number'}), Num);
     });
 
+    it('should handle enum', function () {
+      var Type = transform({
+        type: 'number',
+        'enum': [1, 2, 3.4]
+      });
+      eq(getKind(Type), 'enums');
+      eq(Type.is(4), false);
+      eq(Type.is(3.4), true);
+    });
+
     it('should handle minimum', function () {
       var Type = transform({
         type: 'number',
@@ -157,6 +167,16 @@ describe('transform', function () {
       ok(Type === util.Int);
       eq(Type.is(1), true);
       eq(Type.is(1.1), false);
+    });
+
+    it('should handle enum', function () {
+      var Type = transform({
+        type: 'number',
+        'enum': [1, 2, 3]
+      });
+      eq(getKind(Type), 'enums');
+      eq(Type.is(4), false);
+      eq(Type.is(3), true);
     });
 
     it('should handle minimum', function () {
