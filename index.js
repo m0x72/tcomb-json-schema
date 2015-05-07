@@ -18,10 +18,25 @@ function and(f, g) {
   return f ? fcomb.and(f, g) : g;
 }
 
+function enumNameMap(s) {
+  t.assert(s.enum.length === s.enumNames.length, 'enumNames %s and enum %s of unequal length', s.enumNames, s.enum);
+  var map = {};
+  s.enum.forEach(function (val, key) {
+    map[val] = s.enumNames[key];
+  }); 
+  return enums(map);
+}
+
 var types = {
 
   string: function (s) {
     if (s.hasOwnProperty('enum')) {
+      
+      // return key-title map if enumNames are present (must be of identical length to enum)
+      if (s.hasOwnProperty('enumNames')) {
+        return enumNameMap(s);
+      }
+
       return enums.of(s['enum']);
     }
     var predicate;
@@ -43,12 +58,13 @@ var types = {
 
   number: function (s) {
     if (s.hasOwnProperty('enum')) {
-      // workaround for numeric keys. tcomb issue filed. May be rewritten as `list` of `number`s
-      var e = enums.of(s['enum']);
-      e.is = function (x) {
-        return  this.meta.map.hasOwnProperty(x);
+      
+      // return key-title map if enumNames are present (must be of identical length to enum)
+      if (s.hasOwnProperty('enumNames')) {
+        return enumNameMap(s);
       }
-      return e;
+
+      return enums.of(s['enum']);
     }
     var predicate;
     if (s.hasOwnProperty('minimum')) {
@@ -69,12 +85,13 @@ var types = {
 
   integer: function (s) {
     if (s.hasOwnProperty('enum')) {
-      // workaround for numeric keys. tcomb issue filed. May be rewritten as `list` of `number`s
-      var e = enums.of(s['enum']);
-      e.is = function (x) {
-        return  this.meta.map.hasOwnProperty(x);
+      
+      // return key-title map if enumNames are present (must be of identical length to enum)
+      if (s.hasOwnProperty('enumNames')) {
+        return enumNameMap(s);
       }
-      return e;
+      
+      return enums.of(s['enum']);
     }
     var predicate;
     if (s.hasOwnProperty('minimum')) {

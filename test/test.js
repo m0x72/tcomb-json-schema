@@ -44,6 +44,18 @@ describe('transform', function () {
       eq(Type.is('Street'), true);
     });
 
+    it('should handle enumNames', function () {
+      var Type = transform({
+        type: 'string',
+        'enum': ["APP", "PAI", "CHO"],
+        enumNames: ["apple", "pair", "chocolate"]
+      });
+      eq(getKind(Type), 'enums');
+      eq(Type.is('CHO'), true);
+      eq(Type.is('chocolate'), false);
+      eq(Type.meta.map["CHO"] === "chocolate", true);
+    });
+
     it('should handle minLength', function () {
       var Type = transform({
         type: 'string',
@@ -93,6 +105,19 @@ describe('transform', function () {
       eq(getKind(Type), 'enums');
       eq(Type.is(4), false);
       eq(Type.is(3.4), true);
+    });
+
+    it('should handle enumNames', function () {
+      var Type = transform({
+        type: 'number',
+        'enum': [1, 2, 3.5],
+        enumNames: ["apple", "pair", "chocolate"]
+      });
+      eq(getKind(Type), 'enums');
+      eq(Type.is(1), true);
+      eq(Type.is('2'), true);
+      eq(Type.is('chocolate'), false);
+      eq(Type.meta.map[3.5] === "chocolate", true);
     });
 
     it('should handle minimum', function () {
@@ -177,6 +202,19 @@ describe('transform', function () {
       eq(getKind(Type), 'enums');
       eq(Type.is(4), false);
       eq(Type.is(3), true);
+    });
+
+    it('should handle enumNames', function () {
+      var Type = transform({
+        type: 'number',
+        'enum': [1, 2, 3],
+        enumNames: ["apple", "pair", "chocolate"]
+      });
+      eq(getKind(Type), 'enums');
+      eq(Type.is(1), true);
+      eq(Type.is('2'), true);
+      eq(Type.is('chocolate'), false);
+      eq(Type.meta.map[3] === "chocolate", true);
     });
 
     it('should handle minimum', function () {
