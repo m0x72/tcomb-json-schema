@@ -14,6 +14,22 @@ var enums = t.enums;
 
 var SchemaType = enums.of('null string number integer boolean object array', 'SchemaType');
 
+// fcomb extensions
+
+fcomb.uniqueItems = function uniqueItems() {
+  var ret = function uniqueItems(x) {
+    return x.every( function (val, key) {
+      return x.slice(key+1).every(function (val2, key2) {
+        return val2 !== val;
+      });
+    });
+  };
+  ret.fmeta = {
+    kind: 'uniqueItems'
+  };
+  return ret;
+}
+
 function and(f, g) {
   return f ? fcomb.and(f, g) : g;
 }
@@ -131,21 +147,28 @@ var types = {
   },
 
   array: function (s) {
+    var predicate;
+    var type = Arr;
+
     if (s.hasOwnProperty('items')) {
       var items = s.items;
       if (Obj.is(items)) {
-        return t.list(transform(s.items));
+        type = t.list(transform(s.items));
+      } else {
+        type = t.tuple(items.map(transform), null, true, s.hasOwnProperty('additionalItems') ? s.additionalItems : transform({}));
       }
-      return t.tuple(items.map(transform));
     }
-    var predicate;
+  
     if (s.hasOwnProperty('minItems')) {
       predicate = and(predicate, fcomb.minLength(s.minItems));
     }
     if (s.hasOwnProperty('maxItems')) {
       predicate = and(predicate, fcomb.maxLength(s.maxItems));
     }
-    return predicate ? subtype(Arr, predicate) : Arr;
+    if (s.hasOwnProperty('uniqueItems') && s.uniqueItems) {
+      predicate = and(predicate, fcomb.uniqueItems()); 
+    }
+    return predicate ? subtype(type, predicate) : type;
   },
 
   null: function () {
