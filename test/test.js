@@ -336,10 +336,67 @@ describe('transform', function () {
       eq(Type.meta.predicate(['a']), true);
     });
 
+    it('should handle minItems with items<Schema>', function () {
+      var Type = transform({type: 'array', minItems: 2, items: { type: 'number' } });
+      eq(getKind(Type), 'subtype');
+      eq(getKind(Type.meta.type), 'list');
+      eq(Type.meta.type.meta.type, Num);
+      ok(Type.meta.predicate([1, 2]));
+      ko(Type.meta.predicate([2]));
+    });
+
+    it('should handle minItems with items<[Schema]>', function () {
+      var Type = transform({type: 'array', minItems: 2, items: [ {type: 'number'}, {type: 'string'} ] });
+     
+      eq(getKind(Type), 'subtype');
+      eq(getKind(Type.meta.type), 'tuple');
+      assert.deepEqual(Type.meta.type.meta.types, [Num, Str]);
+      
+      ko(Type.is([1]));
+      ko(Type.is(['a']));
+      ok(Type.is([1, 'test']));
+      ko(Type.is([1, 2]));
+      ko(Type.is([2, 'val', 'some', 1, 2, 3.5])); // ko due to tuple representation of items (requires equal length)
+    });
+  
+
     it('should handle maxItems', function () {
       var Type = transform({type: 'array', maxItems: 2});
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Arr);
+      eq(Type.meta.predicate(['a', 'b']), true);
+      eq(Type.meta.predicate(['a', 'b', 'c']), false);
+    });
+
+    it('should handle maxItems with items<Schema>', function () {
+      var Type = transform({type: 'array', maxItems: 2, items: { type: 'number' } });
+      eq(getKind(Type), 'subtype');
+      eq(getKind(Type.meta.type), 'list');
+      eq(Type.meta.type.meta.type, Num);
+      ok(Type.meta.predicate([1, 2]));
+      ko(Type.meta.predicate([2, 3, 4]));
+    });
+
+    it('should handle maxItems with items<[Schema]>', function () {
+      var Type = transform({type: 'array', maxItems: 2, items: [ {type: 'number'}, {type: 'string'} ] });
+     
+      eq(getKind(Type), 'subtype');
+      eq(getKind(Type.meta.type), 'tuple');
+      assert.deepEqual(Type.meta.type.meta.types, [Num, Str]);
+      
+      ko(Type.is([1])); // ko due to tuple representation of items (requires equal length)
+      ko(Type.is(['a']));
+      ok(Type.is([1, 'test']));
+      ko(Type.is([1, 2]));
+      ok(Type.is([2, 'val']));
+    });
+
+    it('should handle min and maxItems', function () {
+      var Type = transform({type: 'array', minItems: 1, maxItems: 2});
+      eq(getKind(Type), 'subtype');
+      eq(Type.meta.type, Arr);
+      eq(Type.meta.predicate([]), false);
+      eq(Type.meta.predicate(['a']), true);
       eq(Type.meta.predicate(['a', 'b']), true);
       eq(Type.meta.predicate(['a', 'b', 'c']), false);
     });
@@ -366,6 +423,19 @@ describe('transform', function () {
       eq(getKind(Type), 'tuple');
       ok(Type.meta.types[0] === Str);
       ok(Type.meta.types[1] === Num);
+    });
+
+    it('should handle uniqueItems', function () {
+      var Type = transform({
+        type: 'array',
+        uniqueItems: true,
+        items: {
+          type: 'number'
+        }
+      });
+
+      ok(Type.is([1, 2, 3]));
+      ko(Type.is([1, 2, 2, 3]));
     });
 
   });
